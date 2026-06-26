@@ -718,9 +718,9 @@ p{color:var(--ink-soft)}
   flex:0 0 auto;
 }
 .mosaic-card--fit img{
-  object-fit:contain;
+  aspect-ratio:4/3;
+  object-fit:cover;
   object-position:center;
-  background:linear-gradient(180deg,#f5f0e8 0%,#ebe4d8 100%);
 }
 .mosaic-card figcaption{
   flex:1 0 auto;
