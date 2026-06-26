@@ -2,6 +2,8 @@
   const toggle = document.querySelector('.nav-toggle');
   const nav = document.querySelector('.nav-links');
   const header = document.querySelector('.site-header');
+  const shell = document.querySelector('.page-shell');
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function setNavOpen(open) {
     if (!nav || !toggle) return;
@@ -33,23 +35,48 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const revealItems = document.querySelectorAll('.reveal');
-    if (revealItems.length && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
-      );
-      revealItems.forEach((item) => observer.observe(item));
+  if (shell) {
+    if (prefersReducedMotion) {
+      shell.classList.add('is-ready');
+    } else {
+      requestAnimationFrame(() => shell.classList.add('is-ready'));
     }
-  } else {
-    document.querySelectorAll('.reveal').forEach((item) => item.classList.add('is-visible'));
   }
+
+  const staggerGroups = document.querySelectorAll('.reveal-stagger');
+  const revealItems = document.querySelectorAll('.reveal');
+
+  function showAll() {
+    staggerGroups.forEach((group) => group.classList.add('is-visible'));
+    revealItems.forEach((item) => item.classList.add('is-visible'));
+  }
+
+  if (prefersReducedMotion) {
+    showAll();
+    return;
+  }
+
+  if (!('IntersectionObserver' in window)) {
+    showAll();
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+  );
+
+  staggerGroups.forEach((group) => observer.observe(group));
+  revealItems.forEach((item) => {
+    if (!item.closest('.reveal-stagger')) {
+      observer.observe(item);
+    }
+  });
 })();
