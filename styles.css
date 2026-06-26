@@ -717,11 +717,6 @@ p{color:var(--ink-soft)}
   object-fit:cover;
   flex:0 0 auto;
 }
-.mosaic-card--fit img{
-  aspect-ratio:4/3;
-  object-fit:cover;
-  object-position:center;
-}
 .mosaic-card figcaption{
   flex:1 0 auto;
   display:flex;
