@@ -70,13 +70,27 @@
         }
       });
     },
-    { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0, rootMargin: '0px 0px -24px 0px' }
   );
 
-  staggerGroups.forEach((group) => observer.observe(group));
+  function isPartiallyVisible(el) {
+    const rect = el.getBoundingClientRect();
+    const viewHeight = window.innerHeight || document.documentElement.clientHeight;
+    return rect.bottom > 24 && rect.top < viewHeight - 24;
+  }
+
+  function observeReveal(target) {
+    if (isPartiallyVisible(target)) {
+      target.classList.add('is-visible');
+      return;
+    }
+    observer.observe(target);
+  }
+
+  staggerGroups.forEach((group) => observeReveal(group));
   revealItems.forEach((item) => {
     if (!item.closest('.reveal-stagger')) {
-      observer.observe(item);
+      observeReveal(item);
     }
   });
 })();
