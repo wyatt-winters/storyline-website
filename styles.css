@@ -1132,6 +1132,21 @@ p{color:var(--ink-soft)}
 .pricing-item-highlight h3{
   color:var(--yellow-deep);
 }
+.pricing-card--wide{
+  max-width:var(--wrap);
+}
+.scan-services{
+  grid-template-columns:repeat(2,1fr);
+}
+.pricing-rate{
+  margin:10px 0 0;
+  font-weight:600;
+  color:var(--ink);
+  font-size:.95rem;
+}
+.pricing-card .prepare-note{
+  margin-top:4px;
+}
 
 .detail-grid{
   display:grid;
@@ -1327,7 +1342,8 @@ p{color:var(--ink-soft)}
   .mosaic-grid,
   .testimonials-grid,
   .footer-grid,
-  .gallery-pair{
+  .gallery-pair,
+  .scan-services{
     grid-template-columns:1fr;
   }
   .mosaic-card figcaption{
