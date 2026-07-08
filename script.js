@@ -58,9 +58,11 @@
     '.eyebrow',
   ].join(',');
 
-  function tieOrphans(el) {
-    if (el.dataset.orphansFixed) return;
+  const MIN_FONT_SCALE = 0.8;
+  const FONT_STEP = 0.02;
 
+  function textNodesOf(el) {
+    const nodes = [];
     const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
         if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
@@ -71,20 +73,67 @@
         return NodeFilter.FILTER_ACCEPT;
       },
     });
-
-    let lastText = null;
-    while (walker.nextNode()) lastText = walker.currentNode;
-    if (!lastText) return;
-
-    const text = lastText.textContent;
-    const fixed = text.replace(/\s+(\S+)\s+(\S+)\s*$/, '\u00A0$1\u00A0$2');
-    if (fixed === text) return;
-
-    lastText.textContent = fixed;
-    el.dataset.orphansFixed = '';
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    return nodes;
   }
 
-  document.querySelectorAll(orphanSelectors).forEach(tieOrphans);
+  function tieLastWords(el) {
+    const nodes = textNodesOf(el);
+    const lastText = nodes[nodes.length - 1];
+    if (!lastText) return;
+    const text = lastText.textContent;
+    const fixed = text.replace(/\s+(\S+)\s*$/, '\u00A0$1');
+    if (fixed !== text) lastText.textContent = fixed;
+  }
+
+  function hasOrphan(el) {
+    const range = document.createRange();
+    const tops = [];
+    textNodesOf(el).forEach((node) => {
+      const t = node.textContent;
+      const re = /\S+/g;
+      let m;
+      while ((m = re.exec(t))) {
+        range.setStart(node, m.index);
+        range.setEnd(node, m.index + m[0].length);
+        const rect = range.getBoundingClientRect();
+        if (rect.width || rect.height) tops.push(Math.round(rect.top));
+      }
+    });
+    if (tops.length < 2) return false;
+    const lastTop = Math.max.apply(null, tops);
+    const wordsOnLastLine = tops.filter((top) => Math.abs(top - lastTop) <= 2).length;
+    return wordsOnLastLine < 2;
+  }
+
+  function fixElement(el) {
+    el.style.fontSize = '';
+    tieLastWords(el);
+    if (!hasOrphan(el)) return;
+    let scale = 1;
+    while (scale > MIN_FONT_SCALE && hasOrphan(el)) {
+      scale -= FONT_STEP;
+      el.style.fontSize = (scale * 100).toFixed(1) + '%';
+    }
+  }
+
+  function preventOrphans() {
+    document.querySelectorAll(orphanSelectors).forEach(fixElement);
+  }
+
+  preventOrphans();
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(preventOrphans);
+  }
+  let orphanTimer;
+  window.addEventListener(
+    'resize',
+    () => {
+      clearTimeout(orphanTimer);
+      orphanTimer = setTimeout(preventOrphans, 150);
+    },
+    { passive: true }
+  );
 
   const staggerGroups = document.querySelectorAll('.reveal-stagger');
   const revealItems = document.querySelectorAll('.reveal');
