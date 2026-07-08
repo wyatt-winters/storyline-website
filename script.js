@@ -43,6 +43,49 @@
     }
   }
 
+  const orphanSelectors = [
+    '.page-main p',
+    '.page-main li',
+    '.page-main blockquote',
+    '.page-main h1',
+    '.page-main h2',
+    '.page-main h3',
+    '.page-main h4',
+    '.page-main summary',
+    '.page-main cite',
+    '.nav-tagline',
+    '.footer-bottom span',
+    '.eyebrow',
+  ].join(',');
+
+  function tieOrphans(el) {
+    if (el.dataset.orphansFixed) return;
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+        const parent = node.parentElement;
+        if (parent && (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE')) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    let lastText = null;
+    while (walker.nextNode()) lastText = walker.currentNode;
+    if (!lastText) return;
+
+    const text = lastText.textContent;
+    const fixed = text.replace(/\s+(\S+)\s+(\S+)\s*$/, '\u00A0$1\u00A0$2');
+    if (fixed === text) return;
+
+    lastText.textContent = fixed;
+    el.dataset.orphansFixed = '';
+  }
+
+  document.querySelectorAll(orphanSelectors).forEach(tieOrphans);
+
   const staggerGroups = document.querySelectorAll('.reveal-stagger');
   const revealItems = document.querySelectorAll('.reveal');
 
