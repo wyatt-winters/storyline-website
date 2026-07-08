@@ -54,8 +54,10 @@ button,input,textarea,select{font:inherit}
 .wrap{width:min(var(--wrap),calc(100% - 40px));margin:0 auto}
 .page-shell{min-height:100vh;display:flex;flex-direction:column}
 .page-main{flex:1}
-.page-pad{padding:90px 0}
-.page-pad-tight{padding:68px 0}
+.page-pad{padding:58px 0}
+.page-pad-tight{padding:44px 0}
+.page-pad--flush-bottom{padding-bottom:22px}
+.page-pad--flush-top{padding-top:22px}
 .surface{background:var(--warm)}
 .surface-soft{background:var(--warm-2)}
 
@@ -865,10 +867,17 @@ p{color:var(--ink-soft)}
   box-shadow:var(--shadow-soft);
   display:grid;
   grid-template-columns:1fr;
-  grid-template-rows:auto 1fr auto;
+  grid-template-rows:auto auto 1fr auto;
   gap:10px;
   align-content:start;
   height:100%;
+}
+.quote-headline{
+  font-family:"Fahkwang",serif;
+  font-size:1.4rem;
+  line-height:1.2;
+  color:var(--red);
+  margin:0;
 }
 .quote-mark{
   color:var(--red);
@@ -884,6 +893,13 @@ p{color:var(--ink-soft)}
   color:var(--ink);
   margin:0;
   line-height:1.45;
+}
+.quote-card blockquote p{
+  margin:0;
+  color:inherit;
+}
+.quote-card blockquote p + p{
+  margin-top:14px;
 }
 .quote-card cite{
   margin-top:auto;
@@ -964,7 +980,7 @@ p{color:var(--ink-soft)}
 }
 
 .cta-band{
-  padding:84px 0;
+  padding:58px 0;
   background:linear-gradient(180deg,#fff7e3,#fff);
   border-top:1px solid rgba(17,17,17,.06);
   border-bottom:1px solid rgba(17,17,17,.06);
@@ -1064,6 +1080,17 @@ p{color:var(--ink-soft)}
   display:grid;
   gap:10px;
 }
+.faq-answer a{
+  color:var(--red);
+  font-weight:600;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.faq-answer a:hover{color:#980000}
+.faq-answer ul + p,
+.faq-answer ol + p{
+  margin-top:12px;
+}
 .faq-item{
   padding:26px 28px;
   background:#fff;
@@ -1148,13 +1175,16 @@ p{color:var(--ink-soft)}
   border-color:rgba(254,178,0,.2);
 }
 .pricing-item-highlight h3{
-  color:var(--yellow-deep);
+  color:var(--ink);
 }
 .pricing-card--wide{
   max-width:var(--wrap);
 }
 .scan-services{
   grid-template-columns:repeat(2,1fr);
+}
+.scan-services .pricing-item-highlight{
+  grid-column:1 / -1;
 }
 .pricing-rate{
   margin:10px 0 0;
@@ -1380,7 +1410,7 @@ p{color:var(--ink-soft)}
     height:88px;
     max-width:none;
   }
-  .page-pad{padding:72px 0}
+  .page-pad{padding:46px 0}
 }
 
 @media (prefers-reduced-motion:reduce){

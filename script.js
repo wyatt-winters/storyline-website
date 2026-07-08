@@ -43,19 +43,17 @@
     }
   }
 
+  // Headings are intentionally excluded: they rely on CSS `text-wrap: balance`.
+  // Tying/resizing headings can strand a short leading word (e.g. "The" above
+  // "Storyline Difference"), so we only adjust body-level text here.
   const orphanSelectors = [
     '.page-main p',
     '.page-main li',
     '.page-main blockquote',
-    '.page-main h1',
-    '.page-main h2',
-    '.page-main h3',
-    '.page-main h4',
     '.page-main summary',
     '.page-main cite',
     '.nav-tagline',
     '.footer-bottom span',
-    '.eyebrow',
   ].join(',');
 
   const MIN_FONT_SCALE = 0.8;
@@ -185,4 +183,87 @@
       observeReveal(item);
     }
   });
+})();
+
+// Remember where you left off on the FAQ page: when you follow a backlink and
+// then return, restore the scroll position and which accordion item was open.
+(function () {
+  const accordion = document.querySelector('.faq-accordion');
+  if (!accordion) return;
+
+  const STORAGE_KEY = 'storyline:faq-state:' + location.pathname;
+  const items = Array.from(accordion.querySelectorAll('.faq-details'));
+  let restoring = false;
+
+  function readState() {
+    try {
+      return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || 'null');
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveState() {
+    if (restoring) return;
+    try {
+      const open = [];
+      items.forEach((el, i) => {
+        if (el.open) open.push(i);
+      });
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ scrollY: window.scrollY, open: open })
+      );
+    } catch (e) {
+      /* storage unavailable */
+    }
+  }
+
+  function restoreState() {
+    const state = readState();
+    if (!state) return;
+
+    restoring = true;
+
+    if (Array.isArray(state.open)) {
+      items.forEach((el, i) => {
+        el.open = state.open.indexOf(i) !== -1;
+      });
+    }
+
+    const targetY = typeof state.scrollY === 'number' ? state.scrollY : 0;
+    // Scroll after layout settles (open panels + web fonts change height).
+    requestAnimationFrame(() => {
+      window.scrollTo(0, targetY);
+      setTimeout(() => {
+        window.scrollTo(0, targetY);
+        restoring = false;
+      }, 160);
+    });
+  }
+
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
+  // Single-open accordion: opening one item closes any other open item.
+  items.forEach((el) => {
+    el.addEventListener('toggle', () => {
+      if (restoring || !el.open) return;
+      items.forEach((other) => {
+        if (other !== el) other.open = false;
+      });
+    });
+  });
+
+  // Persist on accordion toggle (capture phase: the toggle event doesn't bubble)
+  // and whenever the page is left or a link is followed.
+  accordion.addEventListener('toggle', saveState, true);
+  document.querySelectorAll('.page-main a[href], .site-footer a[href]').forEach((a) => {
+    a.addEventListener('click', saveState);
+  });
+  window.addEventListener('pagehide', saveState);
+  window.addEventListener('beforeunload', saveState);
+
+  restoreState();
 })();
